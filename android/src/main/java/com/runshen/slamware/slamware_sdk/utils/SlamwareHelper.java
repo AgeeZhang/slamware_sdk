@@ -88,6 +88,9 @@ public class SlamwareHelper {
      */
     public boolean isConnection(){
         boolean flag = true;
+        if(platform == null ) {
+            return false;
+        }
         try {
             HealthInfo healthInfo = getPlatform().getRobotHealth();
             Iterator iterator = healthInfo.getErrors().iterator();
@@ -104,6 +107,10 @@ public class SlamwareHelper {
         return flag;
     }
 
+    /**
+     * 获取设备信息
+     * @return
+     */
     public String getPos() {
         try {
             Pose pose = getPlatform().getPose();
@@ -144,6 +151,10 @@ public class SlamwareHelper {
         }
     }
 
+    /**
+     * 上传虚拟地图
+     * @param mapPath
+     */
     public void uploadMap(String mapPath){
         try {
             Pose pose = getPlatform().getPose();
@@ -155,6 +166,12 @@ public class SlamwareHelper {
         }
     }
 
+    /**
+     * 移动到指定位置
+     * @param tarX
+     * @param tarY
+     * @param tarZ
+     */
     public void moveTo(String tarX,String tarY,String tarZ){
         try {
             IMoveAction moveAction;
@@ -178,7 +195,10 @@ public class SlamwareHelper {
         }
     }
 
-
+    /**
+     * 朝着指定方向移动
+     * @param direction
+     */
     public void moveBy(MoveDirection direction){
         try {
             IMoveAction moveAction = getPlatform().moveBy(direction);
@@ -187,6 +207,9 @@ public class SlamwareHelper {
         }
     }
 
+    /**
+     * 回到充电桩
+     */
     public void goHome(){
         try {
             IMoveAction moveAction = getPlatform().goHome();

@@ -44,6 +44,9 @@ android {
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
+            minifyEnabled false //删除无用代码
+            useProguard false    //代码压缩设置
+            shrinkResources false //删除无用资源
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }

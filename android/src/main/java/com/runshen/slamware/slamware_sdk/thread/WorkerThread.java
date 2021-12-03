@@ -10,16 +10,18 @@ import androidx.annotation.NonNull;
 import com.runshen.slamware.slamware_sdk.utils.SlamwareHelper;
 import com.slamtec.slamware.action.MoveDirection;
 
-import java.util.logging.Logger;
-
+/**
+ * action工作线程
+ * auth zhangzj
+ */
 public class WorkerThread extends Thread {
 
     private final static String TAG = "WorkerThread";
 
-    private static final int ACTION_CANCEL = 0X1010; // 取消操作
-    private static final int ACTION_MOVE_BY = 0X2010; //
-    private static final int ACTION_MOVE_TO = 0X2014;  //
-    private static final int ACTION_MOVE_BACK_HOME = 0X2015; //
+    private static final int ACTION_CANCEL = 0X1010; // 取消所有操作
+    private static final int ACTION_MOVE_BY = 0X2010; // 朝指定方向移动事件
+    private static final int ACTION_MOVE_TO = 0X2014;  // 朝指定坐标移动事件
+    private static final int ACTION_MOVE_BACK_HOME = 0X2015; // 返回充电桩事件
 
     private static final class WorkerThreadHandler extends Handler {
 
@@ -86,6 +88,26 @@ public class WorkerThread extends Thread {
         Looper.loop();
     }
 
+    public final void exit() {
+        if (Thread.currentThread() != this) {
+            Log.w(TAG,"exit() - exit app thread asynchronously");
+            mWorkerHandler.sendEmptyMessage(ACTION_CANCEL);
+            return;
+        }
+
+        mReady = false;
+
+        // TODO should remove all pending(read) messages
+
+        Log.d(TAG,"exit() > start");
+
+        Looper.myLooper().quit();
+
+        mWorkerHandler.release();
+
+        Log.d(TAG,"exit() > end");
+    }
+
     public final void moveBy(MoveDirection direction){
         if (Thread.currentThread() != this) {
             Log.w(TAG,"moveBy() - worker thread asynchronously " + direction);
@@ -95,6 +117,7 @@ public class WorkerThread extends Thread {
             mWorkerHandler.sendMessage(envelop);
             return;
         }
+        isRun = true;
         while (isRun) {
             SlamwareHelper.getInstance().moveBy(direction);
         }
