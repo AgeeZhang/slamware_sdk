@@ -31,7 +31,15 @@ class SlamwareSdk {
   }
 
   static Future<dynamic> uploadMap(String path) async {
-    await _channel.invokeMethod('uploadMap',{"path",path});
+    await _channel.invokeMethod('uploadMap',{"path":path});
+  }
+
+  static Future<dynamic> setSpeed(String value) async {
+    await _channel.invokeMethod('setSpeed',{"value":value});
+  }
+
+  static Future<dynamic> setAngularSpeed(String value) async {
+    await _channel.invokeMethod('setAngularSpeed',{"value":value});
   }
 
   static Future<String?> get getInfo async {

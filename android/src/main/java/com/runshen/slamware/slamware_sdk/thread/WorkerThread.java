@@ -41,14 +41,15 @@ public class WorkerThread extends Thread {
                 Log.w(TAG, "handler is already released! " + msg.what);
                 return;
             }
+
             switch (msg.what) {
                 case ACTION_MOVE_BY:
                     MoveDirection direction = (MoveDirection) msg.obj;
                     mWorkerThread.moveBy(direction);
                     break;
                 case ACTION_MOVE_TO:
-                    String[] data = (String[])msg.obj;
-                    mWorkerThread.moveTo(data[0],data[1],data[2]);
+                    String[] data = (String[]) msg.obj;
+                    mWorkerThread.moveTo(data[0], data[1], data[2]);
                     break;
                 case ACTION_MOVE_BACK_HOME:
                     mWorkerThread.goHome();
@@ -78,7 +79,7 @@ public class WorkerThread extends Thread {
 
     @Override
     public void run() {
-        Log.i(TAG,"start to run");
+        Log.i(TAG, "start to run");
         Looper.prepare();
 
         mWorkerHandler = new WorkerThreadHandler(this);
@@ -90,7 +91,7 @@ public class WorkerThread extends Thread {
 
     public final void exit() {
         if (Thread.currentThread() != this) {
-            Log.w(TAG,"exit() - exit app thread asynchronously");
+            Log.w(TAG, "exit() - exit app thread asynchronously");
             mWorkerHandler.sendEmptyMessage(ACTION_CANCEL);
             return;
         }
@@ -99,18 +100,18 @@ public class WorkerThread extends Thread {
 
         // TODO should remove all pending(read) messages
 
-        Log.d(TAG,"exit() > start");
+        Log.d(TAG, "exit() > start");
 
         Looper.myLooper().quit();
 
         mWorkerHandler.release();
 
-        Log.d(TAG,"exit() > end");
+        Log.d(TAG, "exit() > end");
     }
 
-    public final void moveBy(MoveDirection direction){
+    public final void moveBy(MoveDirection direction) {
         if (Thread.currentThread() != this) {
-            Log.w(TAG,"moveBy() - worker thread asynchronously " + direction);
+            Log.w(TAG, "moveBy() - worker thread asynchronously " + direction);
             Message envelop = new Message();
             envelop.what = ACTION_MOVE_BY;
             envelop.obj = direction;
@@ -123,21 +124,21 @@ public class WorkerThread extends Thread {
         }
     }
 
-    public final void moveTo(String tarX,String tarY,String tarZ){
+    public final void moveTo(String tarX, String tarY, String tarZ) {
         if (Thread.currentThread() != this) {
-            Log.w(TAG,"moveTo() - worker thread asynchronously " + tarX + " " + tarY + " " + tarZ);
+            Log.w(TAG, "moveTo() - worker thread asynchronously " + tarX + " " + tarY + " " + tarZ);
             Message envelop = new Message();
             envelop.what = ACTION_MOVE_TO;
-            envelop.obj = new String[]{tarX, tarY,tarZ};
+            envelop.obj = new String[]{tarX, tarY, tarZ};
             mWorkerHandler.sendMessage(envelop);
             return;
         }
-        SlamwareHelper.getInstance().moveTo(tarX,tarY,tarZ);
+        SlamwareHelper.getInstance().moveTo(tarX, tarY, tarZ);
     }
 
-    public final void goHome(){
+    public final void goHome() {
         if (Thread.currentThread() != this) {
-            Log.w(TAG,"goHome() - worker thread asynchronously ");
+            Log.w(TAG, "goHome() - worker thread asynchronously ");
             Message envelop = new Message();
             envelop.what = ACTION_MOVE_BACK_HOME;
             mWorkerHandler.sendMessage(envelop);
@@ -146,9 +147,9 @@ public class WorkerThread extends Thread {
         SlamwareHelper.getInstance().goHome();
     }
 
-    public final void cancel(){
+    public final void cancel() {
         if (Thread.currentThread() != this) {
-            Log.w(TAG,"cancel() - worker thread asynchronously ");
+            Log.w(TAG, "cancel() - worker thread asynchronously ");
             Message envelop = new Message();
             envelop.what = ACTION_CANCEL;
             mWorkerHandler.sendMessage(envelop);
@@ -157,8 +158,6 @@ public class WorkerThread extends Thread {
         isRun = false;
         SlamwareHelper.getInstance().cancel();
     }
-
-
 
 
 }

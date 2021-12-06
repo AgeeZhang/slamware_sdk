@@ -1,6 +1,9 @@
 package com.runshen.slamware.slamware_sdk.utils;
 
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.slamtec.slamware.AbstractSlamwarePlatform;
 import com.slamtec.slamware.action.ActionStatus;
@@ -15,6 +18,7 @@ import com.slamtec.slamware.robot.MoveOption;
 import com.slamtec.slamware.robot.Pose;
 import com.slamtec.slamware.robot.PowerStatus;
 import com.slamtec.slamware.robot.Rotation;
+import com.slamtec.slamware.robot.SystemParameters;
 import com.slamtec.slamware.sdp.CompositeMapHelper;
 
 import org.json.JSONObject;
@@ -23,11 +27,12 @@ import java.util.Iterator;
 
 public class SlamwareHelper {
 
-    private final static String TAG ="SlamwareHelper";
+    private final static String TAG = "SlamwareHelper";
     private volatile static SlamwareHelper instance;
     private static AbstractSlamwarePlatform platform;
+    private static Context context;
     private static String IP;
-    private static Integer PORT;
+    private static int PORT;
 
     private SlamwareHelper() {
 
@@ -35,6 +40,7 @@ public class SlamwareHelper {
 
     /**
      * 单例
+     *
      * @return
      */
     public static SlamwareHelper getInstance() {
@@ -44,37 +50,60 @@ public class SlamwareHelper {
         return instance;
     }
 
+    private void showMessage(String message) {
+        Toast.makeText(this.context, message, Toast.LENGTH_LONG).show();
+    }
+
+    public void init(Context context) {
+        this.context = context;
+        this.IP = "127.0.0.1";
+        this.PORT = 1445;
+    }
+
     /**
      * 获取platform （只实例化一次
+     *
      * @return
      */
-    private AbstractSlamwarePlatform getPlatform(){
-        if(platform == null)
-            platform = DeviceManager.connect(IP,PORT);
+    private AbstractSlamwarePlatform getPlatform() {
+        if (platform == null)
+            platform = DeviceManager.connect(IP, 1445);
         return platform;
     }
 
     /**
      * 初始化连接
+     *
      * @param ip
      * @param port
      */
-    public boolean connect(String ip,int port){
+    public boolean connect(String ip, int port) {
         this.IP = ip;
         this.PORT = port;
-        platform = DeviceManager.connect(ip, port);
-        if(platform != null){
+        try {
+            Log.i(TAG, "IP:" + ip + "____PORT:" + port);
+            platform = DeviceManager.connect(ip, port);
+            if (platform == null) {
+                showMessage("连接失败，请输入正确的IP地址");
+                Log.e(TAG, "连接失败，请输入正确的IP地址");
+                return false;
+            }
+            Log.e(TAG, "连接成功");
+            showMessage("连接成功");
             return true;
-        }else{
-            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            showMessage("连接失败，请输入正确的IP地址");
+            Log.e(TAG, "连接失败，请输入正确的IP地址");
         }
+        return false;
     }
 
     /**
      * 断开连接
      */
-    public void disconnect(){
-        if(platform!=null) {
+    public void disconnect() {
+        if (platform != null) {
             platform.disconnect();
             platform = null;
             this.IP = "";
@@ -84,31 +113,34 @@ public class SlamwareHelper {
 
     /**
      * 判断底盘连接是否正常
+     *
      * @return
      */
-    public boolean isConnection(){
+    public boolean isConnection() {
         boolean flag = true;
-        if(platform == null ) {
+        if (platform == null) {
+            Log.e(TAG, "底盘未连接");
             return false;
         }
         try {
             HealthInfo healthInfo = getPlatform().getRobotHealth();
             Iterator iterator = healthInfo.getErrors().iterator();
-            while (iterator.hasNext()){
+            while (iterator.hasNext()) {
                 HealthInfo.BaseError baseError = (HealthInfo.BaseError) iterator.next();
-                if(baseError.getErrorComponent() == HealthInfo.BaseError.BaseComponentErrorTypeSystemCtrlBusDisconnected){
+                if (baseError.getErrorComponent() == HealthInfo.BaseError.BaseComponentErrorTypeSystemCtrlBusDisconnected) {
                     flag = false;
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG,e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
         return flag;
     }
 
     /**
      * 获取设备信息
+     *
      * @return
      */
     public String getPos() {
@@ -142,8 +174,8 @@ public class SlamwareHelper {
             data.put("y", location_y);
             data.put("raw", location_raw);
             data.put("battery", battery_percentage);
-            data.put("isCharging",isCharging);
-            data.put("isDocking",isDocking);
+            data.put("isCharging", isCharging);
+            data.put("isDocking", isDocking);
             return data.toString();
         } catch (Exception e) {
             Log.i(TAG, "获取信息出错");
@@ -153,26 +185,28 @@ public class SlamwareHelper {
 
     /**
      * 上传虚拟地图
+     *
      * @param mapPath
      */
-    public void uploadMap(String mapPath){
+    public void uploadMap(String mapPath) {
         try {
             Pose pose = getPlatform().getPose();
             CompositeMapHelper compositeMapHelper = new CompositeMapHelper();
             CompositeMap localCompositeMap = compositeMapHelper.loadFile(mapPath);
             getPlatform().setCompositeMap(localCompositeMap, pose);
-        }catch (Exception e){
-            Log.e(TAG,"");
+        } catch (Exception e) {
+            Log.e(TAG, "上传地图失败");
         }
     }
 
     /**
      * 移动到指定位置
+     *
      * @param tarX
      * @param tarY
      * @param tarZ
      */
-    public void moveTo(String tarX,String tarY,String tarZ){
+    public void moveTo(String tarX, String tarY, String tarZ) {
         try {
             IMoveAction moveAction;
             MoveOption moveOption = new MoveOption();
@@ -180,55 +214,95 @@ public class SlamwareHelper {
             moveOption.setMilestone(false);
             Location target = new Location(Float.parseFloat(tarX), Float.parseFloat(tarY), 0);
             moveAction = getPlatform().moveTo(target, moveOption, 0);
-            Log.i("moveTo", "move start");
+            Log.i(TAG, "moveTo move start");
             moveAction.waitUntilDone();
             if (moveAction.getStatus() == ActionStatus.FINISHED) {
-                Log.i("moveTo", "move done");
+                Log.i(TAG, "moveTo move done");
             }
             moveAction = getPlatform().rotateTo(new Rotation(Float.parseFloat(tarZ), 0, 0));
             moveAction.waitUntilDone();
             if (moveAction.getStatus() == ActionStatus.FINISHED) {
-                Log.i("moveTo", "rotate done");
+                Log.i(TAG, "moveTo rotate done");
             }
         } catch (Exception e) {
-            Log.i("Error", e.toString());
+            e.printStackTrace();
+            Log.i(TAG, "移动失败");
         }
     }
 
     /**
      * 朝着指定方向移动
+     *
      * @param direction
      */
-    public void moveBy(MoveDirection direction){
+    public void moveBy(MoveDirection direction) {
         try {
             IMoveAction moveAction = getPlatform().moveBy(direction);
-        }catch (Exception e){
-            Log.e(TAG,"");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "前行失败");
         }
     }
 
     /**
      * 回到充电桩
      */
-    public void goHome(){
+    public void goHome() {
         try {
             IMoveAction moveAction = getPlatform().goHome();
             moveAction.waitUntilDone();
             if (moveAction.getStatus() == ActionStatus.FINISHED) {
                 Log.i(TAG, "Home Sweet Home");
             }
-        }catch (Exception e){
-            Log.e(TAG,"");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "回桩失败");
         }
     }
 
-    public void cancel(){
-        try{
+    /**
+     * 取消当前事务
+     */
+    public void cancel() {
+        try {
             getPlatform().getCurrentAction().cancel();
-        }catch (Exception e){
-            Log.e(TAG,"");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "取消事务异常");
         }
     }
 
+    /**
+     * 设置最大线速度 最大值1 精度6位
+     *
+     * @param value
+     */
+    public void setSpeed(String value) {
+        try {
+            String oldVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED);
+            Log.i(TAG, "原最大线速度：" + oldVal);
+            getPlatform().setSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED, value);
+            String newVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED);
+            Log.i(TAG, "更新后最大线速度：" + newVal);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * 设置最大角速度 最大值2 精度6位
+     *
+     * @param value
+     */
+    public void setAngularSpeed(String value) {
+        try {
+            String oldVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED);
+            Log.i(TAG, "原最大角速度：" + oldVal);
+            getPlatform().setSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED, value);
+            String newVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED);
+            Log.i(TAG, "更新后最大角速度：" + newVal);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
