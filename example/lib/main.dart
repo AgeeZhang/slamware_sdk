@@ -243,7 +243,7 @@ class _MyAppState extends State<MyApp> {
                   textColor: Colors.white,
                   child: new Text('设置最大线速度'),
                   onPressed: (){
-                    SlamwareSdk.setSpeed("10");
+                    SlamwareSdk.setSpeed("0.100000");
                   }
                 ),
                 MaterialButton(
@@ -251,7 +251,7 @@ class _MyAppState extends State<MyApp> {
                   textColor: Colors.white,
                   child: new Text('设置最大角速度'),
                   onPressed: (){
-                    SlamwareSdk.setAngularSpeed("10");
+                    SlamwareSdk.setAngularSpeed("0.100000");
                   }
                 ),
               ]

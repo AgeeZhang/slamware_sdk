@@ -55,7 +55,7 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
         } else if (call.method.equals("action")) {
             String mode = call.argument("mode");
             if (!TextUtils.isEmpty(mode)) {
-                getWorkerThread().cancel();
+                getWorkerThread().cancel(0);
                 switch (mode) {
                     case "moveForward":
                         getWorkerThread().moveBy(MoveDirection.FORWARD);
@@ -84,7 +84,7 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
                         getWorkerThread().goHome();
                         break;
                     case "cancel":
-                        getWorkerThread().cancel();
+                        getWorkerThread().cancel(0);
                         break;
                     default:
                         break;

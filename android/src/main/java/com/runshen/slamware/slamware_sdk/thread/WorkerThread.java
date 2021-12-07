@@ -55,7 +55,7 @@ public class WorkerThread extends Thread {
                     mWorkerThread.goHome();
                     break;
                 case ACTION_CANCEL:
-                    mWorkerThread.cancel();
+                    mWorkerThread.cancel(0);
                     break;
             }
         }
@@ -155,6 +155,12 @@ public class WorkerThread extends Thread {
             mWorkerHandler.sendMessage(envelop);
             return;
         }
+        Log.w(TAG, "cancel()");
+        isRun = false;
+        SlamwareHelper.getInstance().cancel();
+    }
+
+    public final void cancel(int i){
         isRun = false;
         SlamwareHelper.getInstance().cancel();
     }
