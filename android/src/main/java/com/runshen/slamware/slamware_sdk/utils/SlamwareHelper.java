@@ -18,6 +18,7 @@ import com.slamtec.slamware.robot.MoveOption;
 import com.slamtec.slamware.robot.Pose;
 import com.slamtec.slamware.robot.PowerStatus;
 import com.slamtec.slamware.robot.Rotation;
+import com.slamtec.slamware.robot.SlamcoreShutdownParam;
 import com.slamtec.slamware.robot.SystemParameters;
 import com.slamtec.slamware.sdp.CompositeMapHelper;
 
@@ -102,13 +103,15 @@ public class SlamwareHelper {
     /**
      * 断开连接
      */
-    public void disconnect() {
+    public boolean disconnect() {
         if (platform != null) {
             platform.disconnect();
             platform = null;
             this.IP = "";
             this.PORT = 0;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -188,14 +191,17 @@ public class SlamwareHelper {
      *
      * @param mapPath
      */
-    public void uploadMap(String mapPath) {
+    public boolean uploadMap(String mapPath) {
         try {
             Pose pose = getPlatform().getPose();
             CompositeMapHelper compositeMapHelper = new CompositeMapHelper();
             CompositeMap localCompositeMap = compositeMapHelper.loadFile(mapPath);
             getPlatform().setCompositeMap(localCompositeMap, pose);
+            CompositeMap map = getPlatform().getCompositeMap();
+            return map != null;
         } catch (Exception e) {
             Log.e(TAG, "上传地图失败");
+            return false;
         }
     }
 
@@ -277,16 +283,18 @@ public class SlamwareHelper {
      *
      * @param value
      */
-    public void setSpeed(String value) {
+    public boolean setSpeed(String value) {
         try {
             String oldVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED);
             Log.i(TAG, "原最大线速度：" + oldVal);
             getPlatform().setSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED, value);
             String newVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_SPEED);
             Log.i(TAG, "更新后最大线速度：" + newVal);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     /**
@@ -294,15 +302,36 @@ public class SlamwareHelper {
      *
      * @param value
      */
-    public void setAngularSpeed(String value) {
+    public boolean setAngularSpeed(String value) {
         try {
             String oldVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED);
             Log.i(TAG, "原最大角速度：" + oldVal);
             getPlatform().setSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED, value);
             String newVal = getPlatform().getSystemParameter(SystemParameters.SYSPARAM_ROBOT_ANGULAR_SPEED);
             Log.i(TAG, "更新后最大角速度：" + newVal);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    /**
+     * 设置关机时间
+     *
+     * @param restartTimeIntervalMinute   重启时间
+     * @param shutdownTimeIntervalMinute  关机时间
+     */
+    public boolean setShutdownTimeIntervalMinute(int restartTimeIntervalMinute, int shutdownTimeIntervalMinute) {
+        try {
+            SlamcoreShutdownParam slamcoreShutdownParam = new SlamcoreShutdownParam();
+            slamcoreShutdownParam.setShutdownTimeIntervalMinute(shutdownTimeIntervalMinute);
+            slamcoreShutdownParam.setRestartTimeIntervalMinute(restartTimeIntervalMinute);
+            getPlatform().shutdownSlamcore(slamcoreShutdownParam);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

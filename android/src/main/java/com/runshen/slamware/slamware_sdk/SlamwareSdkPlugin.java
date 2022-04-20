@@ -40,18 +40,15 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
             result.success("Android " + android.os.Build.VERSION.RELEASE);
         } else if (call.method.equals("connectAgv")) {
             String ip = call.argument("ip");
-            boolean success = SlamwareHelper.getInstance().connect(ip, 1445);
-            result.success(success);
+            result.success(SlamwareHelper.getInstance().connect(ip, 1445));
         } else if (call.method.equals("connect")) {
             String ip = call.argument("ip");
             int port = Integer.valueOf(call.argument("port"));
-            boolean success = SlamwareHelper.getInstance().connect(ip, port);
-            result.success(success);
+            result.success(SlamwareHelper.getInstance().connect(ip, port));
         } else if (call.method.equals("disconnect")) {
-            SlamwareHelper.getInstance().disconnect();
+            result.success(SlamwareHelper.getInstance().disconnect());
         } else if (call.method.equals("isConnection")) {
-            boolean success = SlamwareHelper.getInstance().isConnection();
-            result.success(success);
+            result.success(SlamwareHelper.getInstance().isConnection());
         } else if (call.method.equals("action")) {
             String mode = call.argument("mode");
             if (!TextUtils.isEmpty(mode)) {
@@ -92,18 +89,21 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
             }
         } else if (call.method.equals("uploadMap")) {
             String mapPath = call.argument("path");
-            SlamwareHelper.getInstance().uploadMap(mapPath);
+            result.success(SlamwareHelper.getInstance().uploadMap(mapPath));
         } else if (call.method.equals("getInfo")) {
-            String str = SlamwareHelper.getInstance().getPos();
-            result.success(str);
+            result.success(SlamwareHelper.getInstance().getPos());
         } else if (call.method.equals("threadInfo")) {
             Log.i("Thread", "back home: " + getWorkerThread().isAlive());
         } else if (call.method.equals("setSpeed")) {
             String value = call.argument("value");
-            SlamwareHelper.getInstance().setSpeed(value);
+            result.success(SlamwareHelper.getInstance().setSpeed(value));
         } else if (call.method.equals("setAngularSpeed")) {
             String value = call.argument("value");
-            SlamwareHelper.getInstance().setAngularSpeed(value);
+            result.success(SlamwareHelper.getInstance().setAngularSpeed(value));
+        } else if (call.method.equals("shutdown")) {
+            int restartTimeIntervalMinute = Integer.valueOf(call.argument("restartTimeIntervalMinute"));
+            int shutdownTimeIntervalMinute = Integer.valueOf(call.argument("shutdownTimeIntervalMinute"));
+            result.success(SlamwareHelper.getInstance().setShutdownTimeIntervalMinute(restartTimeIntervalMinute,shutdownTimeIntervalMinute));
         } else {
             result.notImplemented();
         }
