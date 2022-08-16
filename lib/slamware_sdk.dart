@@ -68,33 +68,37 @@ class SlamwareSdk {
   }
 
   // 控制底盘回到充电桩
-  static Future<dynamic> get getBackHome async {
-    await _channel.invokeMethod('action', {"mode": "backHome"});
+  static Future<bool?> get getBackHome async {
+    final bool? success = await _channel.invokeMethod('action', {"mode": "backHome"});
+    return success;
   }
 
   // 底盘移动到指定区域
-  static Future<dynamic> agvMoveTo(
+  static Future<bool?> agvMoveTo(
       double tarX, double tarY, double tarZ) async {
-    await _channel.invokeMethod('action', {
+    final bool? success = await _channel.invokeMethod('action', {
       "mode": "moveTo",
       'tarX': tarX.toString(),
       'tarY': tarY.toString(),
       'tarZ': tarZ.toString()
     });
+    return success;
   }
 
   // 底盘暂停移动
-  static Future<dynamic> get actionCancel async {
-    await _channel.invokeMethod('action', {"mode": "cancel"});
+  static Future<bool?> get actionCancel async {
+    final bool? success = await _channel.invokeMethod('action', {"mode": "cancel"});
+    return success;
   }
 
   // 指定底盘移动方向并移动
-  static Future<dynamic> agvMoveBy(String mode) async {
+  static Future<bool?> agvMoveBy(String mode) async {
     if (!['moveForward', 'moveBackward', 'turnLeft', 'turnRight']
         .contains(mode)) {
-      return;
+      return false;
     }
-    await _channel.invokeMethod('action', {"mode": mode});
+    final bool? success = await _channel.invokeMethod('action', {"mode": mode});
+    return success;
   }
 
   // 底盘关机
@@ -102,4 +106,11 @@ class SlamwareSdk {
     final bool? success = await _channel.invokeMethod('shutdown', {"restartTimeIntervalMinute": restartTimeIntervalMinute,"shutdownTimeIntervalMinute":shutdownTimeIntervalMinute});
     return success;
   }
+
+  // 设置当前位置
+  static Future<bool?> setLocation(String x, String y, String z) async {
+    final bool? success = await _channel.invokeMethod('setLocation', {"x": x,"y":y,"z":z});
+    return success;
+  }
+  
 }

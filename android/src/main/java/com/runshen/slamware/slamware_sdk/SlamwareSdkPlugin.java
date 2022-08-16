@@ -87,6 +87,7 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
                         break;
                 }
             }
+            result.success(true);
         } else if (call.method.equals("uploadMap")) {
             String mapPath = call.argument("path");
             result.success(SlamwareHelper.getInstance().uploadMap(mapPath));
@@ -103,7 +104,12 @@ public class SlamwareSdkPlugin implements FlutterPlugin, MethodCallHandler {
         } else if (call.method.equals("shutdown")) {
             int restartTimeIntervalMinute = Integer.valueOf(call.argument("restartTimeIntervalMinute"));
             int shutdownTimeIntervalMinute = Integer.valueOf(call.argument("shutdownTimeIntervalMinute"));
-            result.success(SlamwareHelper.getInstance().setShutdownTimeIntervalMinute(restartTimeIntervalMinute,shutdownTimeIntervalMinute));
+            result.success(SlamwareHelper.getInstance().setShutdownTimeIntervalMinute(restartTimeIntervalMinute, shutdownTimeIntervalMinute));
+        } else if (call.method.equals("setLocation")) {
+            float x = Float.valueOf(call.argument("x"));
+            float y = Float.valueOf(call.argument("y"));
+            float z = Float.valueOf(call.argument("z"));
+            result.success(SlamwareHelper.getInstance().setLocation(x, y, z));
         } else {
             result.notImplemented();
         }

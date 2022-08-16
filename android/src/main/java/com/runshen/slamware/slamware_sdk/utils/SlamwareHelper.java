@@ -319,8 +319,8 @@ public class SlamwareHelper {
     /**
      * 设置关机时间
      *
-     * @param restartTimeIntervalMinute   重启时间
-     * @param shutdownTimeIntervalMinute  关机时间
+     * @param restartTimeIntervalMinute  重启时间
+     * @param shutdownTimeIntervalMinute 关机时间
      */
     public boolean setShutdownTimeIntervalMinute(int restartTimeIntervalMinute, int shutdownTimeIntervalMinute) {
         try {
@@ -334,4 +334,25 @@ public class SlamwareHelper {
         }
         return false;
     }
+
+    /**
+     * 设置机器人当前位置
+     *
+     * @param x X值
+     * @param y Y值
+     * @param z Z值
+     */
+    public boolean setLocation(float x, float y, float z) {
+        try {
+            Pose pose = new Pose();
+            pose.setLocation(new Location(x, y, 0f));
+            pose.setRotation(new Rotation(z, 0f, 0f));
+            getPlatform().setPose(pose);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
