@@ -1,6 +1,6 @@
 # slamware_sdk
 
-A new Flutter project.
+为flutter平台集成的思岚底盘SDK插件
 
 ## Getting Started
 
